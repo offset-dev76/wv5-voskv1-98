@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { TVNavigation } from "@/components/tv-navigation";
 import { AIOverlay } from "@/components/ai-overlay";
 import { HeroCarousel } from "@/components/hero-carousel";
@@ -21,14 +21,46 @@ const Index = () => {
   const [recommendedFocused, setRecommendedFocused] = useState(false);
   const [weather, setWeather] = useState<WeatherType>('rainy');
 
-  // Wake word detection - listens for "Hey Atlas"
-  const { isListening: isWakeWordListening, status: wakeWordStatus, error: wakeWordError } = useWakeWord({
-    onWakeWordDetected: () => {
-      console.log('Wake word detected, opening AI overlay');
-      setIsAIOpen(true);
-    },
-    enabled: !isAIOpen // Disable wake word when AI overlay is open
-  });
+
+  // --- WebSocket Wake Word Integration ---
+  const wsRef = useRef<WebSocket | null>(null);
+  useEffect(() => {
+    // Only connect if overlay is not open
+    if (isAIOpen) {
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+      return;
+    }
+    // Connect to backend WebSocket
+    const ws = new window.WebSocket("ws://localhost:8765");
+    wsRef.current = ws;
+    ws.onopen = () => {
+      console.log("Wake word WebSocket connected");
+    };
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.wakeword) {
+          console.log("Wake word event received, opening AI overlay");
+          setIsAIOpen(true);
+        }
+      } catch (e) {
+        // Ignore parse errors
+      }
+    };
+    ws.onerror = (err) => {
+      console.warn("Wake word WebSocket error", err);
+    };
+    ws.onclose = () => {
+      wsRef.current = null;
+      console.log("Wake word WebSocket closed");
+    };
+    return () => {
+      ws.close();
+    };
+  }, [isAIOpen]);
 
   // Cycle through weather types on component mount
   useEffect(() => {
@@ -173,8 +205,6 @@ const Index = () => {
           isFocused={currentSection === 0}
           onTabChange={setActiveTab}
           activeTab={activeTab}
-          wakeWordStatus={wakeWordStatus}
-          isWakeWordListening={isWakeWordListening}
         />
       </div>
       
