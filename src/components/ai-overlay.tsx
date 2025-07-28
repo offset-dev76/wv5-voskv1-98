@@ -59,37 +59,39 @@ export const AIOverlay = ({
     setError("");
   };
 
-  // Initialize Gemini Live Audio when overlay opens
+  // Initialize Gemini Live Audio when overlay opens and auto-start recording
   useEffect(() => {
+    let autoStart = false;
     if (isOpen && !geminiLiveRef.current) {
       // Request notification permission
       TaskExecutor.requestNotificationPermission();
-      
       geminiLiveRef.current = new GeminiLiveAudio();
       geminiLiveRef.current.onStatusChange = setStatus;
       geminiLiveRef.current.onError = setError;
       geminiLiveRef.current.onTaskDetected = async (result: TranscriptionResult) => {
         setLastDetectedTask(result);
-        
         // Execute the task if it's not 'none'
         if (result.task.type !== 'none') {
           const execResult = await TaskExecutor.executeTask(result.task);
           setExecutionResult(execResult);
-          
           // Auto-close the overlay and stop recording after command execution
           setTimeout(() => {
             handleClose();
           }, 1500);
-          
           // Auto-clear execution result after 4 seconds
           setTimeout(() => setExecutionResult(null), 4000);
         }
-        
         // Auto-clear the task after 5 seconds
         setTimeout(() => setLastDetectedTask(null), 5000);
       };
+      autoStart = true;
     }
-    
+    // Auto-start recording when overlay opens
+    if (isOpen && autoStart) {
+      setTimeout(() => {
+        startRecording();
+      }, 100); // slight delay to ensure GeminiLiveAudio is ready
+    }
     return () => {
       if (!isOpen && geminiLiveRef.current) {
         geminiLiveRef.current.destroy();
