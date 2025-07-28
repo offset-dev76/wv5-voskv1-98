@@ -10,11 +10,15 @@ import type { TranscriptionResult } from "@/types/transcription";
 interface AIOverlayProps {
   isOpen: boolean;
   onClose: () => void;
+  isMinimized?: boolean;
+  onOrderDetected?: (itemName: string, quantity?: number) => void;
 }
 
 export const AIOverlay = ({ 
   isOpen, 
-  onClose
+  onClose,
+  isMinimized = false,
+  onOrderDetected
 }: AIOverlayProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const [status, setStatus] = useState("Ready to speak");

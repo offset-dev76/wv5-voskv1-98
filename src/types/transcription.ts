@@ -9,6 +9,7 @@ export interface Task {
     request?: string;
     search_query?: string;
     query?: string;
+    quantity?: string;
   };
 }
 

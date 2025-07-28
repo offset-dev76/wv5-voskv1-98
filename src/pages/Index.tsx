@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { TVNavigation } from "@/components/tv-navigation";
 import { AIOverlay } from "@/components/ai-overlay";
+import { RestaurantMenuOverlay } from "@/components/restaurant-menu-overlay";
+import { MiniAIWidget } from "@/components/mini-ai-widget";
 import { HeroCarousel } from "@/components/hero-carousel";
 import { AppGrid } from "@/components/app-grid";
 import { ContentRow } from "@/components/content-row";
@@ -8,11 +10,15 @@ import { AppsView } from "@/components/apps-view";
 import { useKeyboardNavigation } from "@/hooks/use-keyboard-nav";
 import { useWakeWord } from "@/hooks/use-wake-word";
 import { cn } from "@/lib/utils";
+import { restaurantMenu } from "@/data/restaurant-menu";
+import type { Order } from "@/types/menu";
 
 type WeatherType = 'rainy' | 'stormy' | 'cloudy' | 'sunny';
 
 const Index = () => {
   const [isAIOpen, setIsAIOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [highlightedItems, setHighlightedItems] = useState<string[]>([]);
   const [currentSection, setCurrentSection] = useState(1); // 0: nav, 1: carousel, 2: apps, 3: recommended
   const [activeTab, setActiveTab] = useState("home");
   const [navFocused, setNavFocused] = useState(false);
@@ -61,6 +67,29 @@ const Index = () => {
       ws.close();
     };
   }, [isAIOpen]);
+
+  // Restaurant menu event listeners
+  useEffect(() => {
+    const handleOpenMenu = () => setIsMenuOpen(true);
+    const handleHighlightItem = (event: any) => {
+      const { itemName } = event.detail;
+      // Find matching menu items and highlight them
+      const matchingItems = restaurantMenu.categories
+        .flatMap(cat => cat.items)
+        .filter(item => item.name.toLowerCase().includes(itemName.toLowerCase()))
+        .map(item => item.id);
+      setHighlightedItems(matchingItems);
+      setIsMenuOpen(true);
+    };
+
+    window.addEventListener('openRestaurantMenu', handleOpenMenu);
+    window.addEventListener('highlightMenuItem', handleHighlightItem);
+
+    return () => {
+      window.removeEventListener('openRestaurantMenu', handleOpenMenu);
+      window.removeEventListener('highlightMenuItem', handleHighlightItem);
+    };
+  }, []);
 
   // Cycle through weather types on component mount
   useEffect(() => {
@@ -200,7 +229,8 @@ const Index = () => {
       <div className="relative z-20">
       <div id="navigation-section">
         <TVNavigation 
-          onAIClick={() => setIsAIOpen(true)} 
+          onAIClick={() => setIsAIOpen(true)}
+          onMenuClick={() => setIsMenuOpen(true)}
           onFocusChange={setNavFocused}
           isFocused={currentSection === 0}
           onTabChange={setActiveTab}
@@ -254,8 +284,35 @@ const Index = () => {
 
         {/* AI Overlay */}
         <AIOverlay
-          isOpen={isAIOpen}
+          isOpen={isAIOpen && !isMenuOpen}
           onClose={() => setIsAIOpen(false)}
+        />
+
+        {/* Restaurant Menu Overlay */}
+        <RestaurantMenuOverlay
+          isOpen={isMenuOpen}
+          onClose={() => {
+            setIsMenuOpen(false);
+            setHighlightedItems([]);
+          }}
+          highlightedItems={highlightedItems}
+          onOrderUpdate={(order: Order) => {
+            console.log('Order received:', order);
+            // TODO: Send order to restaurant endpoint
+          }}
+        />
+
+        {/* Mini AI Widget (shows when menu is open) */}
+        <MiniAIWidget
+          isVisible={isMenuOpen}
+          onClose={() => setIsAIOpen(false)}
+          onOrderDetected={(itemName: string, quantity?: number) => {
+            const matchingItems = restaurantMenu.categories
+              .flatMap(cat => cat.items)
+              .filter(item => item.name.toLowerCase().includes(itemName.toLowerCase()))
+              .map(item => item.id);
+            setHighlightedItems(matchingItems);
+          }}
         />
       </div>
     </div>

@@ -153,13 +153,35 @@ export class TaskExecutor {
    */
   private static handleServiceRequest(task: Task): { success: boolean; message: string } {
     const request = task.payload?.request;
+    const query = task.payload?.query;
 
     switch (request) {
       case 'view_menu':
-        // Placeholder for hotel menu or restaurant menu
+      case 'menu':
+      case 'restaurant_menu':
+        // Trigger menu overlay opening
+        window.dispatchEvent(new CustomEvent('openRestaurantMenu'));
         return { 
           success: true, 
-          message: 'Menu service requested - this would show available menus' 
+          message: 'Opening restaurant menu' 
+        };
+      
+      case 'food_order':
+      case 'order_food':
+        // Handle food ordering
+        const itemName = task.payload?.name || query;
+        if (itemName) {
+          window.dispatchEvent(new CustomEvent('highlightMenuItem', { 
+            detail: { itemName, query }
+          }));
+          return {
+            success: true,
+            message: `Highlighting ${itemName} on the menu`
+          };
+        }
+        return {
+          success: false,
+          message: 'Please specify what you would like to order'
         };
       
       default:

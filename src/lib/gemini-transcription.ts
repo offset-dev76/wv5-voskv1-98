@@ -48,10 +48,13 @@ Look for these command types in the transcription:
    - Examples: "turn on the lights", "set temperature to 72"
    - JSON: {"type": "environment_control", "payload": {"device": "lights", "action": "turn on"}}
 
-4. SERVICE_REQUEST: Information or service requests
-   - Keywords: "what's", "show me", "find", "search for"
-   - Examples: "what's the weather", "show me the menu", "search for action movies"
-   - JSON: {"type": "service_request", "payload": {"request": "weather", "query": "current weather"}}
+4. SERVICE_REQUEST: Information or service requests including food ordering
+   - Keywords: "what's", "show me", "find", "search for", "I want", "I'd like", "order", "get me"
+   - Menu requests: "show me the menu", "I'm hungry", "what food do you have"
+   - Food ordering: "I want pasta carbonara", "order 2 burgers", "get me the salmon", "I'd like tiramisu"
+   - Examples: "what's the weather", "show me the menu", "I want pasta carbonara", "order 2 ribeye steaks"
+   - JSON for menu: {"type": "service_request", "payload": {"request": "view_menu"}}
+   - JSON for food order: {"type": "service_request", "payload": {"request": "food_order", "name": "pasta carbonara", "quantity": "1"}}
 
 5. NONE: No clear command detected
    - For general conversation, unclear audio, non-commands, or ambient sounds
@@ -108,14 +111,15 @@ export const transcribeAndIdentifyTask = async (audioBlob: Blob): Promise<Transc
                                 type: Type.OBJECT,
                                 description: "An object containing command-specific details.",
                                 properties: {
-                                    name: { type: Type.STRING, description: "Name of the app to open." },
+                                    name: { type: Type.STRING, description: "Name of the app to open or food item to order." },
                                     duration: { type: Type.STRING, description: "Duration for a timer." },
                                     device: { type: Type.STRING, description: "Device for environment control." },
                                     action: { type: Type.STRING, description: "Action for environment control." },
                                     value: { type: Type.STRING, description: "Value for an action (e.g., scene name)." },
                                     request: { type: Type.STRING, description: "The specific service request." },
                                     search_query: { type: Type.STRING, description: "Search query for content within apps." },
-                                    query: { type: Type.STRING, description: "Alternative search query field." }
+                                    query: { type: Type.STRING, description: "Alternative search query field." },
+                                    quantity: { type: Type.STRING, description: "Quantity of items to order (for food orders)." }
                                 }
                             }
                         },

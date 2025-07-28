@@ -7,6 +7,7 @@ import { Sparkles } from "lucide-react";
 import aiIcon from "@/assets/ai-icon.png";
 interface TVNavigationProps {
   onAIClick: () => void;
+  onMenuClick?: () => void;
   onFocusChange?: (focused: boolean) => void;
   isFocused?: boolean;
   onTabChange?: (tabId: string) => void;
@@ -29,6 +30,7 @@ const navItems = [{
 }];
 export const TVNavigation = ({
   onAIClick,
+  onMenuClick,
   onFocusChange,
   isFocused: propIsFocused = false,
   onTabChange,
@@ -69,9 +71,14 @@ export const TVNavigation = ({
     },
     onEnter: () => {
       if (!isFocused) return;
-      if (focusedIndex === buttonRefs.current.length - 1) {
+      if (focusedIndex === navItems.length + 1) {
+        // AI button
         onAIClick();
+      } else if (focusedIndex === navItems.length) {
+        // Menu button
+        onMenuClick?.();
       } else {
+        // Navigation tabs
         const tabId = navItems[focusedIndex]?.id;
         if (tabId) {
           setActiveTab(tabId);
@@ -127,9 +134,30 @@ export const TVNavigation = ({
               </div>
             )}
             
+            {/* Menu Button */}
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button ref={el => buttonRefs.current[navItems.length] = el} onClick={onAIClick} onFocus={() => handleFocus(navItems.length)} onBlur={handleBlur} variant="ghost" size="lg" className={cn("relative px-4 py-3 nav-focus nav-text-glow group bg-transparent hover:bg-transparent focus:bg-transparent", "transition-all duration-300 border-none shadow-none")}>
+                <Button 
+                  ref={el => buttonRefs.current[navItems.length] = el} 
+                  onClick={onMenuClick} 
+                  onFocus={() => handleFocus(navItems.length)} 
+                  onBlur={handleBlur} 
+                  variant="ghost" 
+                  size="lg" 
+                  className={cn("relative px-4 py-3 nav-focus nav-text-glow group bg-transparent hover:bg-transparent focus:bg-transparent", "transition-all duration-300 border-none shadow-none")}
+                >
+                  <span className="font-bold text-base uppercase text-white group-hover:text-white/90 transition-all duration-300">MENU</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>View Restaurant Menu</p>
+              </TooltipContent>
+            </Tooltip>
+
+            {/* AI Button */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button ref={el => buttonRefs.current[navItems.length + 1] = el} onClick={onAIClick} onFocus={() => handleFocus(navItems.length + 1)} onBlur={handleBlur} variant="ghost" size="lg" className={cn("relative px-4 py-3 nav-focus nav-text-glow group bg-transparent hover:bg-transparent focus:bg-transparent", "transition-all duration-300 border-none shadow-none")}>
                   <span className="font-bold text-base uppercase text-white group-hover:text-white/90 transition-all duration-300">AI</span>
                 </Button>
               </TooltipTrigger>
