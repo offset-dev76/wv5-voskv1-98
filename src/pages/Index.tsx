@@ -300,6 +300,7 @@ const Index = () => {
             console.log('Order received:', order);
             // TODO: Send order to restaurant endpoint
           }}
+          onAIWidgetClose={() => setIsMenuOpen(false)}
         />
 
         {/* Mini AI Widget (shows when menu is open) */}

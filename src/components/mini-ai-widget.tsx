@@ -45,6 +45,8 @@ export const MiniAIWidget = ({
       setStatus("Tap to order");
       setError("");
     }
+    // Dispatch event to close menu when widget closes
+    window.dispatchEvent(new CustomEvent('aiWidgetClosed'));
     onClose();
   };
 
@@ -59,11 +61,24 @@ export const MiniAIWidget = ({
         if (result.task.type === 'service_request' && 
             (result.task.payload?.request === 'food_order' || 
              result.task.payload?.request === 'order_food')) {
-          const itemName = result.task.payload?.name || result.task.payload?.query;
-          const quantity = result.task.payload?.quantity ? parseInt(result.task.payload.quantity) : 1;
           
-          if (itemName && onOrderDetected) {
-            onOrderDetected(itemName, quantity);
+          // Handle multiple items
+          if (result.task.payload?.items && Array.isArray(result.task.payload.items)) {
+            result.task.payload.items.forEach((item: any) => {
+              const itemName = item.name;
+              const quantity = item.quantity ? parseInt(item.quantity) : 1;
+              if (itemName && onOrderDetected) {
+                onOrderDetected(itemName, quantity);
+              }
+            });
+          } else {
+            // Handle single item
+            const itemName = result.task.payload?.name || result.task.payload?.query;
+            const quantity = result.task.payload?.quantity ? parseInt(result.task.payload.quantity) : 1;
+            
+            if (itemName && onOrderDetected) {
+              onOrderDetected(itemName, quantity);
+            }
           }
         } else {
           // Execute other tasks normally

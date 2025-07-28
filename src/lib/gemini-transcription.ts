@@ -51,10 +51,12 @@ Look for these command types in the transcription:
 4. SERVICE_REQUEST: Information or service requests including food ordering
    - Keywords: "what's", "show me", "find", "search for", "I want", "I'd like", "order", "get me"
    - Menu requests: "show me the menu", "I'm hungry", "what food do you have"
-   - Food ordering: "I want pasta carbonara", "order 2 burgers", "get me the salmon", "I'd like tiramisu"
-   - Examples: "what's the weather", "show me the menu", "I want pasta carbonara", "order 2 ribeye steaks"
+   - Food ordering: Single items: "I want pasta carbonara", "order 2 burgers", "get me the salmon"
+   - Multiple items: "I want pasta carbonara and tiramisu", "order 2 burgers and 3 fries", "get me salmon, pasta, and wine"
+   - Examples: "what's the weather", "show me the menu", "I want pasta carbonara", "order 2 burgers and 3 fries"
    - JSON for menu: {"type": "service_request", "payload": {"request": "view_menu"}}
-   - JSON for food order: {"type": "service_request", "payload": {"request": "food_order", "name": "pasta carbonara", "quantity": "1"}}
+   - JSON for single food order: {"type": "service_request", "payload": {"request": "food_order", "name": "pasta carbonara", "quantity": "1"}}
+   - JSON for multiple food orders: {"type": "service_request", "payload": {"request": "food_order", "items": [{"name": "pasta carbonara", "quantity": "1"}, {"name": "tiramisu", "quantity": "1"}]}}
 
 5. NONE: No clear command detected
    - For general conversation, unclear audio, non-commands, or ambient sounds

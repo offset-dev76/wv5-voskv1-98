@@ -10,6 +10,10 @@ export interface Task {
     search_query?: string;
     query?: string;
     quantity?: string;
+    items?: Array<{
+      name: string;
+      quantity: string;
+    }>;
   };
 }
 
