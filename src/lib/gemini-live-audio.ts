@@ -4,7 +4,7 @@ import { transcribeAndIdentifyTask } from './gemini-transcription';
 import type { TranscriptionResult } from '../types/transcription';
 
 // Hard-coded API key as requested
-const GEMINI_API_KEY = 'AIzaSyAUHP34aS7UPglJDl64pub4kR7m59IZcTw';
+const GEMINI_API_KEY = 'AIzaSyCUwKFsTZQLM_avbJBmdVlGwuewPjdTtl8';
 
 export class GeminiLiveAudio {
   private client: GoogleGenAI;
